@@ -46,7 +46,7 @@ class TimeCounter : AppCompatActivity() {
         val room = sharedPreferences.getString("roomID", "")
         ipAddress=findViewById(R.id.ipAddress)
         roomId=findViewById(R.id.getRoom)
-        ipAddress.text=getLocalIPAddress(this)
+        ipAddress.text=getLocalIPAddress(this)+":$port"
 
         roomId.text="RoomId : $room"
         exit()
