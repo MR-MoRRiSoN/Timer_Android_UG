@@ -20,7 +20,10 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.io.IOException
+import java.net.InetSocketAddress
 import java.net.NetworkInterface
+import java.net.Socket
 import java.net.SocketException
 import java.util.Collections
 import java.util.Locale
@@ -33,7 +36,7 @@ class TimeCounter : AppCompatActivity() {
     private lateinit var roomId: TextView
     private var server: NettyApplicationEngine? = null
     private var timerRunning = false
-    private val port=8080
+    private val port=6832
     @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +47,7 @@ class TimeCounter : AppCompatActivity() {
         ipAddress=findViewById(R.id.ipAddress)
         roomId=findViewById(R.id.getRoom)
         ipAddress.text=getLocalIPAddress(this)
+
         roomId.text="RoomId : $room"
         exit()
         GlobalScope.launch(Dispatchers.IO) {
@@ -53,7 +57,9 @@ class TimeCounter : AppCompatActivity() {
     }
 
     private fun startWebServer() {
-        if (server == null) {
+        val checkIpAddress =getLocalIPAddress(this).toString()
+        val checkPort=isPortOpen(checkIpAddress,port,0)
+        if (!checkPort) {
             server = embeddedServer(Netty, port = port) {
                 routing {
                     get("/{input}") {
@@ -75,7 +81,19 @@ class TimeCounter : AppCompatActivity() {
             println("Server already running")
         }
     }
-    fun stopWebServer() {
+
+    private fun isPortOpen(host: String, port: Int, timeout: Int): Boolean {
+        try {
+            Socket().use { socket ->
+                socket.connect(InetSocketAddress(host, port), timeout)
+                return true
+            }
+        } catch (e: IOException) {
+            // Port is closed or an error occurred
+            return false
+        }
+    }
+    private fun stopWebServer() {
         if (server != null) {
             server!!.stop(0, 0)
             server = null
