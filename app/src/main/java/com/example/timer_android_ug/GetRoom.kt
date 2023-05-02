@@ -13,7 +13,7 @@ class GetRoom : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_get_room)
         if (checkRoomId()){
-            val intent = Intent(this, TimeCounter::class.java)
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }else{
             saveRoom()
@@ -27,7 +27,7 @@ class GetRoom : AppCompatActivity() {
 
         button.setOnClickListener {
             sharedPreferences.edit().putString("roomID", roomId.text.toString()).apply()
-            val intent = Intent(this, TimeCounter::class.java)
+            val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
         }
     }

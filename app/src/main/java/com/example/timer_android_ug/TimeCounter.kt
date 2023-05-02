@@ -20,10 +20,7 @@ import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import java.io.IOException
-import java.net.InetSocketAddress
 import java.net.NetworkInterface
-import java.net.Socket
 import java.net.SocketException
 import java.util.Collections
 import java.util.Locale
@@ -36,30 +33,27 @@ class TimeCounter : AppCompatActivity() {
     private lateinit var roomId: TextView
     private var server: NettyApplicationEngine? = null
     private var timerRunning = false
-    private val port=6832
+    private val port=8080
     @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_time_counter)
-        val sharedPreferences = getSharedPreferences("roomID_pref", Context.MODE_PRIVATE)
-        val room = sharedPreferences.getString("roomID", "")
-        ipAddress=findViewById(R.id.ipAddress)
-        roomId=findViewById(R.id.getRoom)
-        ipAddress.text=getLocalIPAddress(this)+":$port"
-
-        roomId.text="RoomId : $room"
-        exit()
-        GlobalScope.launch(Dispatchers.IO) {
-            startWebServer()
-        }
+//        val sharedPreferences = getSharedPreferences("roomID_pref", Context.MODE_PRIVATE)
+//        val room = sharedPreferences.getString("roomID", "")
+//        ipAddress=findViewById(R.id.ipAddress)
+//        roomId=findViewById(R.id.getRoom)
+//        ipAddress.text=getLocalIPAddress(this)
+//        roomId.text="RoomId : $room"
+//        exit()
+//        GlobalScope.launch(Dispatchers.IO) {
+//            startWebServer()
+//        }
 
     }
 
     private fun startWebServer() {
-        val checkIpAddress =getLocalIPAddress(this).toString()
-        val checkPort=isPortOpen(checkIpAddress,port,0)
-        if (!checkPort) {
+        if (server == null) {
             server = embeddedServer(Netty, port = port) {
                 routing {
                     get("/{input}") {
@@ -79,18 +73,6 @@ class TimeCounter : AppCompatActivity() {
             server!!.start(wait = false)
         } else {
             println("Server already running")
-        }
-    }
-
-    private fun isPortOpen(host: String, port: Int, timeout: Int): Boolean {
-        try {
-            Socket().use { socket ->
-                socket.connect(InetSocketAddress(host, port), timeout)
-                return true
-            }
-        } catch (e: IOException) {
-            // Port is closed or an error occurred
-            return false
         }
     }
     private fun stopWebServer() {
@@ -123,7 +105,7 @@ class TimeCounter : AppCompatActivity() {
         }
     }
 
-    fun getLocalIPAddress(context: Context): String? {
+    private fun getLocalIPAddress(context: Context): String? {
         val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         val network = connectivityManager.activeNetwork
         val networkCapabilities = connectivityManager.getNetworkCapabilities(network)
