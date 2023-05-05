@@ -12,7 +12,6 @@ import android.nfc.tech.NfcA
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.example.timer_android_ug.service.CountdownViewModel
@@ -36,9 +35,9 @@ class MainActivity : AppCompatActivity() {
         roomId=findViewById(R.id.getRoom)
          val sharedPreferences = getSharedPreferences("roomID_pref", Context.MODE_PRIVATE)
          val room = sharedPreferences.getString("roomID", "")
-         val countdownViewModel: CountdownViewModel by viewModels { CountdownViewModelFactory(room.toString()) }
-        roomId.text="RoomId : $room"
-        countdownTextView = findViewById(R.id.countdownTextView)
+//         val countdownViewModel: CountdownViewModel by viewModels { CountdownViewModelFactory(room.toString()) }
+//        roomId.text="RoomId : $room"
+//        countdownTextView = findViewById(R.id.countdownTextView)
 
 //
 //        nfcAdapter = NfcAdapter.getDefaultAdapter(this)
@@ -49,17 +48,17 @@ class MainActivity : AppCompatActivity() {
 //            PendingIntent.FLAG_MUTABLE
 //        )
 
-        intentFilters = arrayOf(IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED))
-        techLists = arrayOf(
-            arrayOf(MifareClassic::class.java.name),
-            arrayOf(NfcA::class.java.name)
-        )
-
-
-        countdownViewModel.remainingTime.observe(this, Observer { timeText ->
-            countdownTextView.text = timeText
-        })
-    }
+//        intentFilters = arrayOf(IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED))
+//        techLists = arrayOf(
+//            arrayOf(MifareClassic::class.java.name),
+//            arrayOf(NfcA::class.java.name)
+//        )
+//
+//
+//        countdownViewModel.remainingTime.observe(this, Observer { timeText ->
+//            countdownTextView.text = timeText
+//        })
+//    }
 
 //
 //    override fun onResume() {
@@ -98,4 +97,5 @@ class MainActivity : AppCompatActivity() {
 //    }
 
 
+}
 }
