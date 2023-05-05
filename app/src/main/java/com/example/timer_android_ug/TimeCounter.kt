@@ -7,7 +7,6 @@ import android.net.NetworkCapabilities
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
-import android.widget.ImageButton
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import io.ktor.application.*
@@ -35,7 +34,6 @@ class TimeCounter : AppCompatActivity() {
     private lateinit var ipAddress: TextView
     private lateinit var roomId: TextView
     private var server: NettyApplicationEngine? = null
-    private var timerRunning = false
     private var isRunning = true
     private val port = 1104
 
@@ -50,12 +48,14 @@ class TimeCounter : AppCompatActivity() {
         roomId = findViewById(R.id.getRoom)
         ipAddress.text = getLocalIPAddress(this) + ":$port"
         roomId.text = "RoomId : $room"
-        exit()
         val endTime = sharedPreferences.getLong("endTime", 0)
         Log.i("remainder", "first end time $endTime")
         if (endTime != 0L) {
-            Log.i("remainder", "testi")
+            sharedPreferences.edit().putBoolean("TimeStarted", true).apply()
             startTimer()
+        }else{
+            sharedPreferences.edit().putBoolean("TimeStarted", false).apply()
+
         }
         GlobalScope.launch(Dispatchers.IO) {
             startWebServer()
@@ -69,24 +69,41 @@ class TimeCounter : AppCompatActivity() {
         if (!checkPort) {
             server = embeddedServer(Netty, port = port) {
                 routing {
-                    get("/{command}/{time}") {
+                    post("/start/{time}") {
                         val command = call.parameters["command"] ?: ""
                         val time = call.parameters["time"]
-                        if (command == "start") {
-                            timerRunning = true
                             val pref = getSharedPreferences("roomID_pref", Context.MODE_PRIVATE)
                             pref.edit().putLong("endTime", time!!.toLong()).apply()
                             val endTime = pref.getLong("endTime", 0)
-                            if (endTime != 0L && !timerRunning) {
-                              Thread {
+                            val checkStartTime = pref.getBoolean("TimeStarted", false)
+                            Log.i("--------------++++++++++++", "first end time $checkStartTime")
+
+                            if (endTime != 0L && !checkStartTime) {
+                                isRunning=true
+                                Log.i("--------------++++++++++++", "first end time $checkStartTime")
+                                Thread {
                                     startTimer()
                                 }.start()
                             }
-
-
-
-                        }
-                        call.respondText("Received: $command", ContentType.Text.Plain)
+                        call.respondText("Received: start", ContentType.Text.Plain)
+                    }
+                }
+                routing {
+                    post("/reset") {
+                        resetTime()
+                        call.respondText("Received: Rested", ContentType.Text.Plain)
+                    }
+                }
+                routing {
+                    post("/pause") {
+                        resetTime()
+                        call.respondText("Received: Pause", ContentType.Text.Plain)
+                    }
+                }
+                routing {
+                    post("/Resume") {
+                        resetTime()
+                        call.respondText("Received: Resume", ContentType.Text.Plain)
                     }
                 }
             }
@@ -129,6 +146,7 @@ class TimeCounter : AppCompatActivity() {
             val countDownTimer = object : CountDownTimer(remainingTime, 1000) {
                 override fun onTick(millisUntilFinished: Long) {
                     if (!isRunning) {
+                        timerTextView.text = "00:00:00"
                         cancel()
                         return
                     }
@@ -152,7 +170,6 @@ class TimeCounter : AppCompatActivity() {
                     }
 
                     timerTextView.text = "00:00:00"
-                    timerRunning = false
                 }
             }
             countDownTimer.start()
@@ -198,15 +215,13 @@ class TimeCounter : AppCompatActivity() {
     override fun onBackPressed() {
     }
 
-    private fun exit() {
-        val exit = findViewById<ImageButton>(R.id.exit)
+    private fun resetTime() {
         val sharedPreferences = getSharedPreferences("roomID_pref", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putLong("endTime", 0L).apply()
+        sharedPreferences.edit().putBoolean("TimeStarted", false).apply()
+        isRunning = false
 
-        exit.setOnClickListener {
-            isRunning = false
-            sharedPreferences.edit().putLong("endTime", 0L).apply()
-        }
+
+
     }
-
-
 }
