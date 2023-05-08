@@ -139,6 +139,8 @@ class TimeCounter : AppCompatActivity() {
         runOnUiThread {
             timerTextView = findViewById(R.id.timerTextView)
             val currentSeconds = System.currentTimeMillis()
+           // Log currentSeconds = timeService.getTime()
+
             val sharedPreferences = getSharedPreferences("roomID_pref", Context.MODE_PRIVATE)
             val endTime = sharedPreferences.getLong("endTime", 0)
             val remainingTime = endTime - currentSeconds
