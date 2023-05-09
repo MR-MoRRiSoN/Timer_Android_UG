@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Timer_Android_UG</string>
-    <string name="_00_00_00">02:00:00</string>
+    <string name="_00_00_00">00:00:00</string>
     <string name="enter_room">Room ID\n</string>
 </resources>

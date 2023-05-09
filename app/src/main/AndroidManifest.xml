@@ -23,12 +23,12 @@
             android:name=".MainActivity"
             android:exported="false" />
         <activity
-            android:name=".TimeCounter"
+            android:name=".GetRoom"
             android:exported="false"/>
 <!--            android:screenOrientation="landscape" />-->
 
         <activity
-            android:name=".GetRoom"
+            android:name=".TimeCounter"
             android:exported="true">
 <!--            android:screenOrientation="landscape"-->
 
