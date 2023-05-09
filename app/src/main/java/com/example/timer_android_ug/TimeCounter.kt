@@ -2,7 +2,6 @@ package com.example.timer_android_ug
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
@@ -10,7 +9,6 @@ import android.os.CountDownTimer
 import android.util.Log
 import android.view.WindowManager
 import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.timer_android_ug.service.NTPTime
 import io.ktor.application.*
@@ -22,7 +20,6 @@ import io.ktor.server.netty.*
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.net.InetSocketAddress
@@ -32,7 +29,10 @@ import java.net.SocketException
 import java.util.Collections
 import java.util.Locale
 import java.util.concurrent.TimeUnit
-import android.os.Process
+import kotlinx.coroutines.runBlocking
+import io.ktor.client.*
+import io.ktor.client.engine.okhttp.*
+import io.ktor.client.request.*
 
 
 class TimeCounter : AppCompatActivity() {
@@ -40,6 +40,7 @@ class TimeCounter : AppCompatActivity() {
     private lateinit var ipAddress: TextView
     private lateinit var roomId: TextView
     private var server: NettyApplicationEngine? = null
+    private var roomThread: Thread? = null
     private var isRunning = true
     private val port = 1104
 
@@ -76,11 +77,12 @@ class TimeCounter : AppCompatActivity() {
         }
     }
 
-    private fun setRoomId(){
-        val intent = Intent(applicationContext, TimeCounter::class.java)
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        startActivity(intent)
-         isRunning = true
+
+    private fun setRoomId(roomID:String){
+        runOnUiThread {
+        roomId = findViewById(R.id.getRoom)
+        roomId.text = "RoomID : $roomID"
+        }
     }
 
     private fun startWebServer() {
@@ -95,7 +97,11 @@ class TimeCounter : AppCompatActivity() {
                         if (sharedPreferences.getString("roomID","NULL")=="NULL"){
                             sharedPreferences.edit().putString("roomID", httpRoomId).apply()
                             call.respondText("Received: Device Registered", ContentType.Text.Plain)
-                            setRoomId()
+                            Thread {
+                                setRoomId("$httpRoomId")
+                            }.start()
+
+
                         }else{
                             call.respondText("Received: Already Registered", ContentType.Text.Plain)
                         }
@@ -108,13 +114,15 @@ class TimeCounter : AppCompatActivity() {
                         val sharedPreferences = getSharedPreferences("roomID_pref", Context.MODE_PRIVATE)
                         sharedPreferences.edit().putString("roomID", "NULL").apply()
                         roomId = findViewById(R.id.getRoom)
+
                         call.respondText("Received: Device Cleaned", ContentType.Text.Plain)
-                        setRoomId()
+                        Thread {
+                            setRoomId("NULL")
+                        }.start()
                     }
                 }
                 routing {
                     post("/start/{time}") {
-                        val command = call.parameters["command"] ?: ""
                         val time = call.parameters["time"]
                         val pref = getSharedPreferences("roomID_pref", Context.MODE_PRIVATE)
                         pref.edit().putLong("endTime", time!!.toLong()).apply()
@@ -140,8 +148,15 @@ class TimeCounter : AppCompatActivity() {
                 }
                 routing {
                     post("/addTime") {
-                        resetTime()
+                     //   resetTime()
                         call.respondText("Received: Pause", ContentType.Text.Plain)
+                    }
+                }
+
+                routing {
+                    post("/alive") {
+                        //   resetTime()
+                        call.respondText("Alive", ContentType.Text.Plain)
                     }
                 }
 
@@ -264,4 +279,5 @@ class TimeCounter : AppCompatActivity() {
 
 
     }
+
 }

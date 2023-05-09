@@ -49,10 +49,13 @@ dependencies {
     implementation 'org.nanohttpd:nanohttpd-webserver:2.3.1'
     implementation 'io.ktor:ktor-server-core:1.6.7'
     implementation 'io.ktor:ktor-server-netty:1.6.7'
-    implementation 'androidx.compose.runtime:runtime:1.2.0-alpha01'
-    implementation 'androidx.compose.ui:ui:1.2.0-alpha01'
+    implementation 'androidx.compose.runtime:runtime:1.5.0-alpha03'
+    implementation 'androidx.compose.ui:ui:1.5.0-alpha03'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+
+    implementation "io.ktor:ktor-client-core:1.6.4"
+    implementation "io.ktor:ktor-client-okhttp:1.6.4"
 
 
     implementation 'commons-net:commons-net:3.8.0'
